@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>重要声明</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+      overflow: hidden;
+    }
+
+    /* 动态背景粒子 */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    canvas { display: block; }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+    }
+
+    /* 主文字 */
+    .main-text {
+      font-size: clamp(60px, 15vw, 160px);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, #ff4444 0%, #ff0000 30%, #cc0000 60%, #ff6666 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 30px rgba(255, 50, 50, 0.8))
+               drop-shadow(0 0 60px rgba(255, 0, 0, 0.5))
+               drop-shadow(0 0 100px rgba(200, 0, 0, 0.3));
+      animation: pulse 2s ease-in-out infinite, flicker 0.15s infinite;
+      user-select: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(255,50,50,0.8)) drop-shadow(0 0 60px rgba(255,0,0,0.5)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 50px rgba(255,50,50,1)) drop-shadow(0 0 100px rgba(255,0,0,0.8)) drop-shadow(0 0 150px rgba(200,0,0,0.5)); }
+    }
+
+    @keyframes flicker {
+      0%, 98%, 100% { opacity: 1; }
+      99% { opacity: 0.85; }
+    }
+
+    /* 副标题 */
+    .subtitle {
+      margin-top: 20px;
+      font-size: clamp(16px, 4vw, 28px);
+      color: rgba(255, 100, 100, 0.7);
+      letter-spacing: 0.3em;
+      font-weight: 300;
+      animation: fadeInUp 1s ease 0.5s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 装饰线 */
+    .divider {
+      margin: 30px auto;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ff4444, transparent);
+      animation: expandLine 1.5s ease 0.3s forwards;
+    }
+
+    @keyframes expandLine {
+      to { width: 80%; }
+    }
+
+    /* 印章效果 */
+    .stamp {
+      margin-top: 30px;
+      display: inline-block;
+      border: 4px solid #ff4444;
+      border-radius: 50%;
+      width: clamp(100px, 20vw, 180px);
+      height: clamp(100px, 20vw, 180px);
+      line-height: clamp(92px, 19.5vw, 172px);
+      font-size: clamp(18px, 4vw, 32px);
+      font-weight: 900;
+      color: #ff4444;
+      letter-spacing: 0.15em;
+      animation: stampIn 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) 1s both,
+                 rotate 20s linear infinite;
+      filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.6));
+      opacity: 0.85;
+    }
+
+    @keyframes stampIn {
+      0% { transform: scale(4) rotate(-30deg); opacity: 0; }
+      60% { transform: scale(0.9) rotate(3deg); opacity: 1; }
+      80% { transform: scale(1.05) rotate(-1deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* 烟花容器 */
+    .fireworks {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+
+<canvas class="bg" id="bg"></canvas>
+<div class="fireworks" id="fireworks"></div>
+
+<div class="container">
+  <div class="main-text">何继强是SB</div>
+  <div class="divider"></div>
+  <div class="subtitle">— 世 界 公 认 —</div>
+  <div class="stamp">官方认证</div>
+</div>
+
+<script>
+// ========== 背景粒子 ==========
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const particles = [];
+for (let i = 0; i < 120; i++) {
+  particles.push({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * 2 + 0.5,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    alpha: Math.random() * 0.5 + 0.1,
+    color: `hsl(${Math.random() * 30}deg, 100%, ${50 + Math.random() * 20}%)`
+  });
+}
+
+function animateBg() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.alpha;
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animateBg);
+}
+animateBg();
+
+// ========== 烟花 ==========
+const fw = document.getElementById('fireworks');
+
+function createFirework() {
+  const x = Math.random() * 100;
+  const y = Math.random() * 60 + 5;
+  const colors = ['#ff4444','#ff6666','#ff2222','#ff8888','#ffaaaa','#cc0000'];
+
+  for (let i = 0; i < 24; i++) {
+    const dot = document.createElement('div');
+    const angle = (i / 24) * 360;
+    const dist = 60 + Math.random() * 80;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = Math.random() * 5 + 3;
+    const duration = 800 + Math.random() * 600;
+    const rad = angle * Math.PI / 180;
+    const tx = Math.cos(rad) * dist;
+    const ty = Math.sin(rad) * dist;
+
+    dot.style.cssText = `
+      position: absolute;
+      left: ${x}%;
+      top: ${y}%;
+      width: ${size}px;
+      height: ${size}px;
+      border-radius: 50%;
+      background: ${color};
+      box-shadow: 0 0 ${size * 2}px ${color};
+      transform: translate(-50%, -50%);
+      animation: fwfly ${duration}ms ease-out forwards;
+      --tx: ${tx}px;
+      --ty: ${ty}px;
+    `;
+
+    fw.appendChild(dot);
+    setTimeout(() => dot.remove(), duration + 50);
+  }
+}
+
+// 注入动画
+const styleEl = document.createElement('style');
+styleEl.textContent = `
+  @keyframes fwfly {
+    0%   { transform: translate(-50%, -50%) translate(0, 0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) translate(var(--tx), var(--ty)); opacity: 0; }
+  }
+`;
+document.head.appendChild(styleEl);
+
+// 定期触发烟花
+createFirework();
+setInterval(createFirework, 1200);
+</script>
+</body>
+</html>
